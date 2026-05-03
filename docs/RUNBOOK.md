@@ -15,14 +15,14 @@ ki index ./repo   # verify it works
 
 ### As an MCP server
 
-Register in your MCP host's config (e.g. Claude Code `settings.json`):
+Create a `.mcp.json` file at your project root (where you run Claude Code):
 
 ```json
 {
   "mcpServers": {
     "knowledge-indexer": {
       "command": "node",
-      "args": ["<path-to>/dist/index.js", "mcp"],
+      "args": ["/absolute/path/to/KnowledgeIndexer/dist/index.js", "mcp"],
       "env": {
         "OPENAI_BASE_URL": "http://localhost:11434/v1",
         "OPENAI_MODEL_ID": "llama3.1"
@@ -32,7 +32,9 @@ Register in your MCP host's config (e.g. Claude Code `settings.json`):
 }
 ```
 
-The MCP server uses its own LLM — the host's LLM is not invoked.
+The MCP server communicates over stdio and uses its own LLM — the host's LLM is not invoked. Restart Claude Code after creating/modifying `.mcp.json` for changes to take effect.
+
+**Important:** `.mcp.json` typically contains credentials — add it to `.gitignore`.
 
 ### Self-hosted LLM configurations
 

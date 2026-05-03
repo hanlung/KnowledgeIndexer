@@ -36,6 +36,9 @@ coverage/
 .nyc_output/
 *.lcov
 
+# MCP config (contains credentials)
+.mcp.json
+
 # Environment & secrets (private info)
 .env
 .env.*

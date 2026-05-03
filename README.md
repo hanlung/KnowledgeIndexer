@@ -135,7 +135,95 @@ ki export my-repo --format both -o docs
 
 ## MCP server
 
-The package also ships an MCP server (`ki mcp`) exposing the same operations as tools (`index_source`, `list_sources`, `show_source`, `query`, `export_source`). The server uses **its own configured LLM** for summarization — the host's LLM (MCP sampling) is **not** invoked. This means an MCP host running Claude Code can drive indexing against a local Ollama model with no host-side cost.
+The package ships an MCP server (`ki mcp`) that communicates over **stdio** and exposes five tools:
+
+| Tool | Description |
+| --- | --- |
+| `index_source` | Scan and index a local git repo (with LLM summarization) |
+| `list_sources` | List all indexed knowledge sources |
+| `show_source` | Show full details for one indexed source |
+| `query` | Case-insensitive search across features and code elements |
+| `export_source` | Re-export indexed data to markdown/YAML without re-running the pipeline |
+
+The server uses **its own configured LLM** for summarization — the host's LLM (MCP sampling) is **not** invoked. This means an MCP host running Claude Code can drive indexing against a local Ollama model with no host-side cost.
+
+### MCP setup
+
+**Prerequisites:** Build the project first (`npm run build`). The MCP server runs from the compiled `dist/` output.
+
+#### Claude Code (`.mcp.json`)
+
+Create a `.mcp.json` file at your project root (or wherever you run Claude Code):
+
+```json
+{
+  "mcpServers": {
+    "knowledge-indexer": {
+      "command": "node",
+      "args": ["/absolute/path/to/KnowledgeIndexer/dist/index.js", "mcp"],
+      "env": {
+        "OPENAI_BASE_URL": "http://localhost:11434/v1",
+        "OPENAI_MODEL_ID": "llama3.1"
+      }
+    }
+  }
+}
+```
+
+#### Claude Code with Anthropic-compatible proxy
+
+```json
+{
+  "mcpServers": {
+    "knowledge-indexer": {
+      "command": "node",
+      "args": ["/absolute/path/to/KnowledgeIndexer/dist/index.js", "mcp"],
+      "env": {
+        "KI_LLM_PROVIDER": "anthropic",
+        "ANTHROPIC_BASE_URL": "https://your-proxy.example.com",
+        "ANTHROPIC_API_KEY": "your-jwt-or-api-key",
+        "KI_ANTHROPIC_MODEL_ID": "your-model-id"
+      }
+    }
+  }
+}
+```
+
+#### Generic MCP host (JSON-RPC over stdio)
+
+Any MCP-aware host can spawn the server. The minimum invocation:
+
+```bash
+node /path/to/KnowledgeIndexer/dist/index.js mcp
+```
+
+The server reads LLM configuration from environment variables (same as the CLI). Pass them however your host supports env injection.
+
+### MCP credential isolation
+
+The MCP server's env block is **independent** of Claude Code's own credentials. This enables useful patterns:
+
+- **Claude Code → Anthropic API** (for the conversation) while the **MCP server → local Ollama** (for indexing) — zero cost for summarization.
+- **Claude Code → cloud model** while **MCP server → corporate proxy** with JWT auth — keeps proxy credentials out of the host config.
+
+### MCP tool details
+
+**`index_source`** parameters:
+- `target` (string, required) — path to the source
+- `type` (enum: `git`|`confluence`|`jira`|`custom`, default: `git`)
+- `include` (string[], optional) — glob patterns to include
+- `exclude` (string[], optional) — glob patterns to exclude
+- `force` (boolean, default: false) — re-index even if no changes detected
+- `dryRun` (boolean, default: false) — scan only, no LLM calls
+
+**`query`** parameters:
+- `term` (string, required) — search term
+- `sourceId` (string, optional) — limit to one source
+
+**`export_source`** parameters:
+- `sourceId` (string, optional) — omit to export all
+- `format` (enum: `md`|`yaml`|`both`, default: `md`)
+- `output` (string, default: `.`) — output directory
 
 ## Data model
 
