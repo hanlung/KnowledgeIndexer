@@ -5,6 +5,8 @@ export type LlmProvider = 'anthropic' | 'openai';
 export interface AnthropicLlmConfig {
   readonly provider: 'anthropic';
   readonly apiKey?: string;
+  readonly authToken?: string;
+  readonly baseUrl?: string;
   readonly modelId: string;
 }
 

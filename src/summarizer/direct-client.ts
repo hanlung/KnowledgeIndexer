@@ -3,7 +3,9 @@ import { logger } from '../utils/logger.js';
 import { DEFAULT_MAX_TOKENS, type LlmClient } from './llm-client.js';
 
 export interface DirectClientOptions {
-  readonly apiKey: string;
+  readonly apiKey?: string;
+  readonly authToken?: string;
+  readonly baseUrl?: string;
   readonly modelId: string;
   readonly maxRetries?: number;
 }
@@ -12,7 +14,11 @@ const DEFAULT_MAX_RETRIES = 3;
 const RETRY_BASE_DELAY_MS = 1000;
 
 export function createDirectClient(options: DirectClientOptions): LlmClient {
-  const client = new Anthropic({ apiKey: options.apiKey });
+  const clientOptions: Record<string, unknown> = {};
+  if (options.apiKey) clientOptions.apiKey = options.apiKey;
+  if (options.authToken) clientOptions.authToken = options.authToken;
+  if (options.baseUrl) clientOptions.baseURL = options.baseUrl;
+  const client = new Anthropic(clientOptions as ConstructorParameters<typeof Anthropic>[0]);
   const maxRetries = options.maxRetries ?? DEFAULT_MAX_RETRIES;
 
   return {

@@ -19,6 +19,8 @@ const envSchema = z.object({
 
   // Anthropic
   ANTHROPIC_API_KEY: optionalString,
+  ANTHROPIC_AUTH_TOKEN: optionalString,
+  ANTHROPIC_BASE_URL: optionalString,
   KI_MODEL_ID: optionalString, // legacy: Anthropic model id
   KI_ANTHROPIC_MODEL_ID: optionalString,
 
@@ -62,6 +64,8 @@ function resolveLlmConfig(parsed: ParsedEnv): LlmConfig {
   return {
     provider: 'anthropic',
     apiKey: parsed.ANTHROPIC_API_KEY,
+    authToken: parsed.ANTHROPIC_AUTH_TOKEN,
+    baseUrl: parsed.ANTHROPIC_BASE_URL,
     modelId:
       parsed.KI_ANTHROPIC_MODEL_ID ??
       parsed.KI_MODEL_ID ??

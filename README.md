@@ -6,7 +6,7 @@ Index knowledge sources (currently: Git repositories) into a 3-layer hierarchy �
 
 - Node.js ≥ 20
 - One configured LLM provider:
-  - `ANTHROPIC_API_KEY` (Claude), **or**
+  - `ANTHROPIC_API_KEY` or `ANTHROPIC_AUTH_TOKEN` (Claude / Anthropic-compatible proxy), **or**
   - `OPENAI_BASE_URL` + `OPENAI_MODEL_ID` (with `OPENAI_API_KEY` for hosted providers)
 
 ## Install
@@ -33,7 +33,9 @@ Configuration is read from environment variables. You must configure exactly one
 
 | Variable | Default | Description |
 | --- | --- | --- |
-| `ANTHROPIC_API_KEY` | _(required)_ | API key for Claude |
+| `ANTHROPIC_API_KEY` | — | API key for Claude (or use `ANTHROPIC_AUTH_TOKEN`) |
+| `ANTHROPIC_AUTH_TOKEN` | — | Alternative credential for proxy gateways |
+| `ANTHROPIC_BASE_URL` | `https://api.anthropic.com` | Override for self-hosted Anthropic-compatible proxy |
 | `KI_ANTHROPIC_MODEL_ID` | `claude-sonnet-4-20250514` | Anthropic model id (legacy `KI_MODEL_ID` still honored) |
 
 ### OpenAI-compatible provider
@@ -66,6 +68,16 @@ export OPENAI_MODEL_ID=your-model-name
 export OPENAI_BASE_URL=https://openrouter.ai/api/v1
 export OPENAI_MODEL_ID=meta-llama/llama-3.1-70b-instruct
 export OPENAI_API_KEY=sk-or-...
+```
+
+#### Anthropic-compatible proxy
+
+If your self-hosted LLM sits behind a proxy that speaks the Anthropic API format (e.g. LiteLLM proxy):
+
+```bash
+export ANTHROPIC_BASE_URL=http://your-proxy:4000
+export ANTHROPIC_AUTH_TOKEN=your-proxy-token
+export KI_ANTHROPIC_MODEL_ID=your-model-id
 ```
 
 ### Pipeline options

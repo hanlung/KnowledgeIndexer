@@ -17,12 +17,17 @@ export class NoLlmAvailableError extends Error {
 // fallback: the host's LLM is never invoked for indexing.
 export function pickClient(llm: LlmConfig): LlmClient {
   if (llm.provider === 'anthropic') {
-    if (!llm.apiKey) {
+    if (!llm.apiKey && !llm.authToken) {
       throw new NoLlmAvailableError(
-        'Anthropic provider selected but ANTHROPIC_API_KEY is not set.',
+        'Anthropic provider selected but neither ANTHROPIC_API_KEY nor ANTHROPIC_AUTH_TOKEN is set.',
       );
     }
-    return createDirectClient({ apiKey: llm.apiKey, modelId: llm.modelId });
+    return createDirectClient({
+      apiKey: llm.apiKey,
+      authToken: llm.authToken,
+      baseUrl: llm.baseUrl,
+      modelId: llm.modelId,
+    });
   }
 
   // OpenAI-compatible. A baseUrl is always required; an apiKey is only
